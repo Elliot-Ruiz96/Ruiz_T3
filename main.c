@@ -75,6 +75,8 @@ int main(void) {
 
     while(1){
 
+    	printf("Boton: %d", g_ButtonPress);
+
     	if(g_ButtonPress)
     	    	{
     	    		g_ButtonPress = false;
