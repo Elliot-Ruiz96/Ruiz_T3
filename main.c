@@ -10,27 +10,19 @@
 #define	PIN22		22u
 #define PIN26		26u
 
-#define CORE_FREQ	21000000u
-#define DELAY		1000000u
-
 gpio_pin_config_t led_config = {
         kGPIO_DigitalOutput,
         1,
     };
 
-gpio_pin_config_t sw2_config = {
-       kGPIO_DigitalInput,
-       0,
-   };
-
-gpio_pin_config_t sw3_config = {
+gpio_pin_config_t sw_config = {
        kGPIO_DigitalInput,
        0,
    };
 
 int main(void) {
 
-	const port_pin_config_t porta_pin4_config = {
+	const port_pin_config_t sw_pin_config = {
 		    kPORT_PullUp,                                            /* Internal pull-up resistor is enabled */
 		    kPORT_FastSlewRate,                                      /* Fast slew rate is configured */
 		    kPORT_PassiveFilterDisable,                              /* Passive filter is disabled */
@@ -39,16 +31,6 @@ int main(void) {
 		    kPORT_MuxAsGpio,                                         /* Pin is configured as PTA4 */
 		    kPORT_UnlockRegister                                     /* Pin Control Register fields [15:0] are not locked */
 		  };
-
-	const port_pin_config_t portc_pin6_config = {
-			kPORT_PullUp,                                            /* Internal pull-up resistor is enabled */
-			kPORT_FastSlewRate,                                      /* Fast slew rate is configured */
-			kPORT_PassiveFilterDisable,                              /* Passive filter is disabled */
-			kPORT_OpenDrainDisable,                                  /* Open drain is disabled */
-			kPORT_HighDriveStrength,                                 /* High drive strength is configured */
-			kPORT_MuxAsGpio,                                         /* Pin is configured as PTA4 */
-			kPORT_UnlockRegister                                     /* Pin Control Register fields [15:0] are not locked */
-			  };
 
 	// Habilitamos los relojes de los Puertos a usar
 
@@ -65,54 +47,46 @@ int main(void) {
 	PORT_SetPinMux(PORTA, PIN4, kPORT_MuxAsGpio); 					// Switch 3 GPIO
 	PORT_SetPinMux(PORTC, PIN6, kPORT_MuxAsGpio); 					// Switch 2 GPIO
 
-	PORT_SetPinConfig(PORTA, PIN4, &porta_pin4_config);				// Activacion de Switch 3
-	PORT_SetPinConfig(PORTC, PIN6, &portc_pin6_config);				// Activacion de Switch 2
+	PORT_SetPinConfig(PORTA, PIN4, &sw_pin_config);				// Activacion de Switch 3
+	PORT_SetPinConfig(PORTC, PIN6, &sw_pin_config);				// Activacion de Switch 2
 
 	GPIO_PinInit(GPIOB, PIN22, &led_config);
 	GPIO_PinInit(GPIOB, PIN21, &led_config);
 	GPIO_PinInit(GPIOE, PIN26, &led_config);
-	GPIO_PinInit(GPIOA, PIN4, &sw3_config);
-	GPIO_PinInit(GPIOC, PIN6, &sw2_config);
+	GPIO_PinInit(GPIOA, PIN4, &swe_config);
+	GPIO_PinInit(GPIOC, PIN6, &sw_config);
 
     while(1){
 
-    	GPIO_PortClear(GPIOE, 1u << PIN26);					// GREEN
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-    	GPIO_PortSet(GPIOE, 1u << PIN26);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+    	// Start
 
-    	GPIO_PortClear(GPIOB, 1u << PIN21);					// BLUE
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-    	GPIO_PortSet(GPIOB, 1u << PIN21);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
+    	GPIO_PortToggle(GPIOE, 1u << PIN26);
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// RED
+    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// PURPLE
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);
 
-    	GPIO_PortClear(GPIOB, 1u << PIN21);					// PURPLE
-    	GPIO_PortClear(GPIOB, 1u << PIN22);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-    	GPIO_PortSet(GPIOB, 1u << PIN21);
-    	GPIO_PortSet(GPIOB, 1u << PIN22);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+    	// Sw2
 
-    	GPIO_PortClear(GPIOB, 1u << PIN22);					// RED
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-    	GPIO_PortSet(GPIOB, 1u << PIN22);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+    	GPIO_PortToggle(GPIOE, 1u << PIN26);					// GREEN
+    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// BLUE
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// RED
 
-    	GPIO_PortClear(GPIOB, 1u << PIN22);					// YELLOW
-    	GPIO_PortClear(GPIOE, 1u << PIN26);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-    	GPIO_PortSet(GPIOB, 1u << PIN22);
-    	GPIO_PortSet(GPIOE, 1u << PIN26);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+    	// Sw3
 
-    	GPIO_PortClear(GPIOB, 1u << PIN21);					// WHITE
-    	GPIO_PortClear(GPIOB, 1u << PIN22);
-    	GPIO_PortClear(GPIOE, 1u << PIN26);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-    	GPIO_PortSet(GPIOB, 1u << PIN21);
-    	GPIO_PortSet(GPIOB, 1u << PIN22);
-    	GPIO_PortSet(GPIOE, 1u << PIN26);
-    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// BLUE
+    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// WHITE
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);
+    	GPIO_PortToggle(GPIOE, 1u << PIN26);
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// RED
+
+    	// Sw3 x2
+
+    	GPIO_PortToggle(GPIOE, 1u << PIN26);					// GREEN
+    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// PURPLE
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);
+    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
+    	GPIO_PortToggle(GPIOE, 1u << PIN26);
 
     }
     return 0 ;
