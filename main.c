@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "fsl_clock.h"
 #include "fsl_gpio.h"
 #include "fsl_port.h"
@@ -7,10 +8,32 @@
 #define PIN4      	4u
 #define	PIN6		6u
 
+uint8_t g_ButtonPress = 0;
+
 gpio_pin_config_t sw_config = {
        kGPIO_DigitalInput,
        0,
    };
+
+// Interrupcion en PORTA
+
+void PORTA_IRQHandler(void)
+{
+
+    GPIO_PortClearInterruptFlags(GPIOA, 1U << PIN4);
+    g_ButtonPress = true;
+    SDK_ISR_EXIT_BARRIER;
+}
+
+// Interrupcion en PORTC
+
+void PORTC_IRQHandler(void)
+{
+
+    GPIO_PortClearInterruptFlags(GPIOC, 1U << PIN6);
+    g_ButtonPress = true;
+    SDK_ISR_EXIT_BARRIER;
+}
 
 int main(void) {
 
@@ -40,9 +63,22 @@ int main(void) {
 	GPIO_PinInit(GPIOA, PIN4, &sw_config);
 	GPIO_PinInit(GPIOC, PIN6, &sw_config);
 
+	PORT_SetPinInterruptConfig(PORTA, PIN4, kPORT_InterruptFallingEdge);
+	PORT_SetPinInterruptConfig(PORTC, PIN6, kPORT_InterruptFallingEdge);
+
+	NVIC_EnableIRQ(PORTA_IRQn);
+	NVIC_EnableIRQ(PORTC_IRQn);
+
+	NVIC_SetPriority(PORTA_IRQn, 1);
+	NVIC_SetPriority(PORTC_IRQn, 1);
+
+
     while(1){
 
-
+    	if(g_ButtonPress)
+    	    	{
+    	    		g_ButtonPress = false;
+    	    	}
 
     }
     return 0 ;
