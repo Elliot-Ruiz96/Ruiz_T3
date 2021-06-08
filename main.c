@@ -98,6 +98,7 @@ int main(void) {
 		printf("Sw2: %d \n", Sw2);
 		printf("Sw3: %d \n", Sw3);
 		printf("Sw: %d \n", Sw);
+		printf("State: %d \n", current_state);
 		if (Sw == TWO && Sw3 == 0){											// Si se presiona por segunda vez S3 seguida
 			Sw = ZERO;
 		}
