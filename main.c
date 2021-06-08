@@ -144,8 +144,11 @@ int main(void) {
 						case ONE:
 							current_state = BLUE;
 						break;
+						case ZERO:
+							current_state = PURPLE;
+							break;
 						default:
-							current_state = BLUE;
+							current_state = GREEN;
 						break;
 				}
 				break;
