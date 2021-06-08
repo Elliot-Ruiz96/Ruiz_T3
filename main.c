@@ -8,6 +8,9 @@
 #define PIN4      	4u
 #define	PIN6		6u
 
+#define CORE_FREQ	21000000u
+#define DELAY		1000000u
+
 uint8_t g_ButtonPress = 0;
 
 gpio_pin_config_t sw_config = {
@@ -75,12 +78,14 @@ int main(void) {
 
     while(1){
 
-    	printf("Boton: %d", g_ButtonPress);
+    	printf("Boton: %d \n", g_ButtonPress);
 
     	if(g_ButtonPress)
     	    	{
     	    		g_ButtonPress = false;
     	    	}
+
+    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
 
     }
     return 0 ;
