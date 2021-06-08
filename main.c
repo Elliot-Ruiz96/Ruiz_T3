@@ -23,9 +23,10 @@ gpio_pin_config_t led_config = {
 #define PIN6         6u
 #define PIN4         4u
 
-#define ONE   (0x01u)										// Sw2
-#define TWO   (0x02u)										// Sw3
-#define THREE (0x03u)										// Start
+#define ONE   	(0x01u)										// Sw2
+#define TWO   	(0x02u)										// Sw3
+#define THREE 	(0x03u)										// Start
+#define ZERO	(0x00u)										// Sw3 X2
 
 typedef enum {
 	RED,
@@ -77,6 +78,9 @@ int main(void) {
     	Sw2 = GPIO_PinRead(GPIOC, PIN6);
     	Sw3 = Sw3 << 1;
 		Sw = Sw2 | Sw3;
+		if (Sw == TWO && Sw3 == 0){											// Si se presiona por segunda vez S3 seguida
+			Sw = ZERO;
+		}
 
 			switch (current_state) {
 				case YELLOW:
@@ -84,17 +88,14 @@ int main(void) {
 			    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
 			    	GPIO_PortToggle(GPIOE, 1u << PIN26);
 
-					if(ONE == Sw){
+					if (THREE == Sw){
+						current_state = RED;
+					}
+					else if(ZERO = Sw){
 						current_state = GREEN;
 					}
-					else if(TWO == Sw){
-						current_state = BLUE;
-					}
-					else if (THREE == Sw){
-						current_state = RED;
-					}
 					else{
-						current_state = RED;
+						current_state = YELLOW;
 					}
 				break;
 
@@ -107,13 +108,13 @@ int main(void) {
 							current_state = GREEN;
 						break;
 						case TWO:
-							current_state = WHITE;
+							current_state = BLUE;
 						break;
 						case THREE:
 							current_state = PURPLE;
 						break;
 						default:
-							current_state = PURPLE;
+							current_state = RED;
 						break;
 					}
 				break;
@@ -126,8 +127,11 @@ int main(void) {
 					if (THREE == Sw){
 						current_state = YELLOW;
 					}
-					else{
+					else if(ZERO == Sw){
 						current_state = YELLOW;
+					}
+					else{
+						current_state = PURPLE;
 					}
 				break;
 
