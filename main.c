@@ -1,85 +1,209 @@
 #include <stdio.h>
-#include <stdint.h>
-#include "fsl_clock.h"
+#include "pin_mux.h"
 #include "fsl_gpio.h"
 #include "fsl_port.h"
 #include "fsl_common.h"
 
-#define PIN4      	4u
-#define	PIN6		6u
-
 uint8_t g_ButtonPress = 0;
 
-gpio_pin_config_t sw_config = {
-       kGPIO_DigitalInput,
-       0,
-   };
+ gpio_pin_config_t sw_config = {
+        kGPIO_DigitalInput,
+        0,
+    };
 
-// Interrupcion en PORTA
 
-void PORTA_IRQHandler(void)
-{
 
-    GPIO_PortClearInterruptFlags(GPIOA, 1U << PIN4);
-    g_ButtonPress = true;
-    SDK_ISR_EXIT_BARRIER;
-}
+gpio_pin_config_t led_config = {
+        kGPIO_DigitalOutput,
+        1,
+    };
 
-// Interrupcion en PORTC
+#define PIN22         22u
+#define PIN21         21u
+#define PIN26         26u
 
-void PORTC_IRQHandler(void)
-{
+#define PIN6         6u
+#define PIN4         4u
 
-    GPIO_PortClearInterruptFlags(GPIOC, 1U << PIN6);
-    g_ButtonPress = true;
-    SDK_ISR_EXIT_BARRIER;
-}
+#define ZERO  (0x00u)
+#define ONE   (0x01u)
+#define TWO   (0x02u)
+#define THREE (0x03u)
+
+typedef enum {
+	RED,
+	BLUE,
+	PURPLE,
+	WHITE,
+}State_name_t;
+
 
 int main(void) {
 
-	const port_pin_config_t sw_pin_config = {
-		    kPORT_PullUp,                                            /* Internal pull-up resistor is enabled */
-		    kPORT_FastSlewRate,                                      /* Fast slew rate is configured */
-		    kPORT_PassiveFilterDisable,                              /* Passive filter is disabled */
-		    kPORT_OpenDrainDisable,                                  /* Open drain is disabled */
-		    kPORT_HighDriveStrength,                                 /* High drive strength is configured */
-		    kPORT_MuxAsGpio,                                         /* Pin is configured as PTA4 */
-		    kPORT_UnlockRegister                                     /* Pin Control Register fields [15:0] are not locked */
-		  };
+	uint32_t input_port_a, input_port_c, total_input;
 
-	// Habilitamos los relojes de los Puertos a usar
+	State_name_t current_state = RED;
 
-	CLOCK_EnableClock(kCLOCK_PortA);								// Switch 3
-	CLOCK_EnableClock(kCLOCK_PortC);								// Switch 2
-
-	// Funcion de GPIO
-
-	PORT_SetPinMux(PORTA, PIN4, kPORT_MuxAsGpio); 					// Switch 3 GPIO
-	PORT_SetPinMux(PORTC, PIN6, kPORT_MuxAsGpio); 					// Switch 2 GPIO
-
-	PORT_SetPinConfig(PORTA, PIN4, &sw_pin_config);					// Activacion de Switch 3
-	PORT_SetPinConfig(PORTC, PIN6, &sw_pin_config);					// Activacion de Switch 2
-
-	GPIO_PinInit(GPIOA, PIN4, &sw_config);
-	GPIO_PinInit(GPIOC, PIN6, &sw_config);
-
-	PORT_SetPinInterruptConfig(PORTA, PIN4, kPORT_InterruptFallingEdge);
-	PORT_SetPinInterruptConfig(PORTC, PIN6, kPORT_InterruptFallingEdge);
-
-	NVIC_EnableIRQ(PORTA_IRQn);
-	NVIC_EnableIRQ(PORTC_IRQn);
-
-	NVIC_SetPriority(PORTA_IRQn, 1);
-	NVIC_SetPriority(PORTC_IRQn, 1);
+	const port_pin_config_t porta_input_pin_config = {
+	    kPORT_PullUp,                                            /* Internal pull-up resistor is enabled */
+	    kPORT_FastSlewRate,                                      /* Fast slew rate is configured */
+	    kPORT_PassiveFilterDisable,                              /* Passive filter is disabled */
+	    kPORT_OpenDrainDisable,                                  /* Open drain is disabled */
+	    kPORT_HighDriveStrength,                                 /* High drive strength is configured */
+	    kPORT_MuxAsGpio,                                         /* Pin is configured as PTA4 */
+	    kPORT_UnlockRegister                                     /* Pin Control Register fields [15:0] are not locked */
+	  };
 
 
-    while(1){
+  CLOCK_EnableClock(kCLOCK_PortA);
+  CLOCK_EnableClock(kCLOCK_PortB);
+  CLOCK_EnableClock(kCLOCK_PortC);
+  CLOCK_EnableClock(kCLOCK_PortE);
 
-    	if(g_ButtonPress)
-    	    	{
-    	    		g_ButtonPress = false;
-    	    	}
+  PORT_SetPinConfig(PORTA, PIN4, &porta_input_pin_config);
+  PORT_SetPinConfig(PORTC, PIN6, &porta_input_pin_config);
 
+  GPIO_PinInit(GPIOA, PIN4, &sw_config);
+  GPIO_PinInit(GPIOC, PIN6, &sw_config);
+
+
+  PORT_SetPinMux(PORTB, PIN22, kPORT_MuxAsGpio);
+  PORT_SetPinMux(PORTB, PIN21, kPORT_MuxAsGpio);
+  PORT_SetPinMux(PORTE, PIN26, kPORT_MuxAsGpio);
+
+
+  GPIO_PinInit(GPIOB, PIN22, &led_config);
+  GPIO_PinInit(GPIOB, PIN21, &led_config);
+  GPIO_PinInit(GPIOE, PIN26, &led_config);
+
+
+
+    while(1) {
+
+
+    	input_port_a = GPIO_PinRead(GPIOA, PIN4);
+    	input_port_c = GPIO_PinRead(GPIOC, PIN6);
+
+    	input_port_a = input_port_a << 1;
+
+		total_input = input_port_a | input_port_c;
+
+
+
+			switch (current_state) {
+				case RED:
+
+					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
+					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
+					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+
+					if(ZERO == total_input)
+					{
+						current_state = WHITE;
+					}
+					else if(ONE == total_input)
+					{
+						current_state = BLUE;
+					}
+					else if(TWO == total_input)
+					{
+						current_state = PURPLE;
+					}
+					else if (THREE == total_input)
+					{
+						current_state = RED;
+					}
+					else
+					{
+						current_state = RED;
+					}
+				break;
+
+				case BLUE:
+
+					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
+					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
+					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+
+					switch (total_input) {
+						case ZERO:
+							current_state = BLUE;
+						break;
+						case ONE:
+							current_state = BLUE;
+						break;
+						case TWO:
+							current_state = RED;
+						break;
+						case THREE:
+							current_state = PURPLE;
+						break;
+						default:
+							current_state = BLUE;
+						break;
+					}
+				break;
+				case PURPLE:
+
+					GPIO_PortClear(GPIOB, 1u << PIN21);//BLUE
+					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
+					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+
+					if(ONE == total_input)
+					{
+						current_state = RED;
+					}
+					else if(ONE == total_input)
+					{
+						current_state = PURPLE;
+					}
+					else if(TWO == total_input)
+					{
+						current_state = PURPLE;
+					}
+					else if (THREE == total_input)
+					{
+						current_state = BLUE;
+					}
+					else
+					{
+						current_state = PURPLE;
+					}
+				break;
+				case WHITE:
+
+					GPIO_PortClear(GPIOB, 1u << PIN21);//BLUE
+					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
+					GPIO_PortClear(GPIOE, 1u << PIN26);//GREE
+
+					switch (total_input) {
+						case ZERO:
+							current_state = WHITE;
+						break;
+						case ONE:
+							current_state = BLUE;
+						break;
+						case TWO:
+							current_state = PURPLE;
+						break;
+						case THREE:
+							current_state = RED;
+						break;
+						default:
+							current_state = WHITE;
+						break;
+				}
+				break;
+				default:
+					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
+					GPIO_PortSet(GPIOB, 1u << PIN22);//RED
+					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+
+					current_state = RED;
+					break;
+			}
+
+			SDK_DelayAtLeastUs(1000000,21000000);
     }
     return 0 ;
 }
