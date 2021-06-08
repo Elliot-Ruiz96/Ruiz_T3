@@ -35,16 +35,17 @@ typedef enum {
 	BLUE,
 	PURPLE,
 	WHITE,
+	YELLOW,
+	GREEN,
 }State_name_t;
-
 
 int main(void) {
 
-	uint32_t input_port_a, input_port_c, total_input;
+	uint32_t sw2, sw3, sw;
 
-	State_name_t current_state = RED;
+	State_name_t current_state = YELLOW;
 
-	const port_pin_config_t porta_input_pin_config = {
+	const port_pin_config_t sw_pin_config = {
 	    kPORT_PullUp,                                            /* Internal pull-up resistor is enabled */
 	    kPORT_FastSlewRate,                                      /* Fast slew rate is configured */
 	    kPORT_PassiveFilterDisable,                              /* Passive filter is disabled */
@@ -54,44 +55,34 @@ int main(void) {
 	    kPORT_UnlockRegister                                     /* Pin Control Register fields [15:0] are not locked */
 	  };
 
-
   CLOCK_EnableClock(kCLOCK_PortA);
   CLOCK_EnableClock(kCLOCK_PortB);
   CLOCK_EnableClock(kCLOCK_PortC);
   CLOCK_EnableClock(kCLOCK_PortE);
 
-  PORT_SetPinConfig(PORTA, PIN4, &porta_input_pin_config);
-  PORT_SetPinConfig(PORTC, PIN6, &porta_input_pin_config);
+  PORT_SetPinConfig(PORTA, PIN4, &sw_pin_config);
+  PORT_SetPinConfig(PORTC, PIN6, &sw_pin_config);
 
   GPIO_PinInit(GPIOA, PIN4, &sw_config);
   GPIO_PinInit(GPIOC, PIN6, &sw_config);
-
 
   PORT_SetPinMux(PORTB, PIN22, kPORT_MuxAsGpio);
   PORT_SetPinMux(PORTB, PIN21, kPORT_MuxAsGpio);
   PORT_SetPinMux(PORTE, PIN26, kPORT_MuxAsGpio);
 
-
   GPIO_PinInit(GPIOB, PIN22, &led_config);
   GPIO_PinInit(GPIOB, PIN21, &led_config);
   GPIO_PinInit(GPIOE, PIN26, &led_config);
 
-
-
     while(1) {
 
-
-    	input_port_a = GPIO_PinRead(GPIOA, PIN4);
-    	input_port_c = GPIO_PinRead(GPIOC, PIN6);
-
-    	input_port_a = input_port_a << 1;
-
-		total_input = input_port_a | input_port_c;
-
-
+    	sw3 = GPIO_PinRead(GPIOA, PIN4);
+    	sw2 = GPIO_PinRead(GPIOC, PIN6);
+    	sw3 = sw3 << 1;
+		sw = sw2 | sw3;
 
 			switch (current_state) {
-				case RED:
+				case YELLOW:
 
 					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
 					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
