@@ -11,8 +11,6 @@ uint8_t g_ButtonPress = 0;
         0,
     };
 
-
-
 gpio_pin_config_t led_config = {
         kGPIO_DigitalOutput,
         1,
@@ -25,10 +23,9 @@ gpio_pin_config_t led_config = {
 #define PIN6         6u
 #define PIN4         4u
 
-#define ZERO  (0x00u)
-#define ONE   (0x01u)
-#define TWO   (0x02u)
-#define THREE (0x03u)
+#define ONE   (0x01u)										// Sw2
+#define TWO   (0x02u)										// Sw3
+#define THREE (0x03u)										// Start
 
 typedef enum {
 	RED,
@@ -41,7 +38,7 @@ typedef enum {
 
 int main(void) {
 
-	uint32_t sw2, sw3, sw;
+	uint32_t Sw2, Sw3, Sw;
 
 	State_name_t current_state = YELLOW;
 
@@ -76,125 +73,120 @@ int main(void) {
 
     while(1) {
 
-    	sw3 = GPIO_PinRead(GPIOA, PIN4);
-    	sw2 = GPIO_PinRead(GPIOC, PIN6);
-    	sw3 = sw3 << 1;
-		sw = sw2 | sw3;
+    	Sw3 = GPIO_PinRead(GPIOA, PIN4);
+    	Sw2 = GPIO_PinRead(GPIOC, PIN6);
+    	Sw3 = Sw3 << 1;
+		Sw = Sw2 | Sw3;
 
 			switch (current_state) {
 				case YELLOW:
 
-					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
-					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
-					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+			    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
+			    	GPIO_PortToggle(GPIOE, 1u << PIN26);
 
-					if(ZERO == total_input)
-					{
-						current_state = WHITE;
+					if(ONE == Sw){
+						current_state = GREEN;
 					}
-					else if(ONE == total_input)
-					{
+					else if(TWO == Sw){
 						current_state = BLUE;
 					}
-					else if(TWO == total_input)
-					{
-						current_state = PURPLE;
-					}
-					else if (THREE == total_input)
-					{
+					else if (THREE == Sw){
 						current_state = RED;
 					}
-					else
-					{
+					else{
 						current_state = RED;
 					}
 				break;
 
-				case BLUE:
+				case RED:
 
-					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
-					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
-					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+					GPIO_PortToggle(GPIOB, 1u << PIN22);					// RED
 
-					switch (total_input) {
-						case ZERO:
-							current_state = BLUE;
-						break;
+					switch (Sw) {
 						case ONE:
-							current_state = BLUE;
+							current_state = GREEN;
 						break;
 						case TWO:
-							current_state = RED;
+							current_state = WHITE;
 						break;
 						case THREE:
 							current_state = PURPLE;
 						break;
 						default:
-							current_state = BLUE;
+							current_state = PURPLE;
 						break;
 					}
 				break;
+
 				case PURPLE:
 
-					GPIO_PortClear(GPIOB, 1u << PIN21);//BLUE
-					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
-					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
+			    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// PURPLE
+			    	GPIO_PortToggle(GPIOB, 1u << PIN22);
 
-					if(ONE == total_input)
-					{
-						current_state = RED;
+					if (THREE == Sw){
+						current_state = YELLOW;
 					}
-					else if(ONE == total_input)
-					{
-						current_state = PURPLE;
-					}
-					else if(TWO == total_input)
-					{
-						current_state = PURPLE;
-					}
-					else if (THREE == total_input)
-					{
-						current_state = BLUE;
-					}
-					else
-					{
-						current_state = PURPLE;
+					else{
+						current_state = YELLOW;
 					}
 				break;
-				case WHITE:
 
-					GPIO_PortClear(GPIOB, 1u << PIN21);//BLUE
-					GPIO_PortClear(GPIOB, 1u << PIN22);//RED
-					GPIO_PortClear(GPIOE, 1u << PIN26);//GREE
+				case GREEN:
 
-					switch (total_input) {
-						case ZERO:
-							current_state = WHITE;
-						break;
+			    	GPIO_PortToggle(GPIOE, 1u << PIN26);					// GREEN
+
+					switch (Sw) {
+
 						case ONE:
 							current_state = BLUE;
 						break;
-						case TWO:
-							current_state = PURPLE;
-						break;
-						case THREE:
-							current_state = RED;
-						break;
 						default:
-							current_state = WHITE;
+							current_state = BLUE;
 						break;
 				}
 				break;
-				default:
-					GPIO_PortSet(GPIOB, 1u << PIN21);//BLUE
-					GPIO_PortSet(GPIOB, 1u << PIN22);//RED
-					GPIO_PortSet(GPIOE, 1u << PIN26);//GREE
 
-					current_state = RED;
+					case BLUE:
+
+				    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// BLUE
+
+						if (ONE == Sw){
+							current_state = RED;
+						}
+						else if (TWO == Sw){
+							current_state = WHITE;
+						}
+						else{
+							current_state = BLUE;
+						}
+					break;
+
+					case WHITE:
+
+				    	GPIO_PortToggle(GPIOB, 1u << PIN21);					// WHITE
+				    	GPIO_PortToggle(GPIOB, 1u << PIN22);
+				    	GPIO_PortToggle(GPIOE, 1u << PIN26);
+
+						switch (Sw) {
+
+							case TWO:
+								current_state = RED;
+							break;
+							default:
+								current_state = WHITE;
+							break;
+					}
+					break;
+
+				default:
+
+			    	GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
+			    	GPIO_PortToggle(GPIOE, 1u << PIN26);
+					current_state = YELLOW;
+
 					break;
 			}
 
-			SDK_DelayAtLeastUs(1000000,21000000);
     }
     return 0 ;
 }
