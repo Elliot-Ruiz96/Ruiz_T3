@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "pin_mux.h"
-#include "fsl_gpio.h"
 #include "fsl_port.h"
 #include "fsl_common.h"
+#include "RGB.h"
 
 uint8_t g_ButtonPress = 0;
 
@@ -21,10 +21,6 @@ gpio_pin_config_t analyzer_config = {
         1,
 };
 
-#define PIN22       22u
-#define PIN21       21u
-#define PIN26		26u
-
 #define PIN2		2u
 #define PIN3		3u
 
@@ -35,9 +31,6 @@ gpio_pin_config_t analyzer_config = {
 #define TWO   		(0x02u)										// Sw3 Derecha
 #define THREE 		(0x03u)										// Start
 #define ZERO		(0x00u)										// Sw3 X2
-
-#define CORE_FREQ	21000000u
-#define DELAY		1000000u
 
 typedef enum {
 	RED,
@@ -107,12 +100,8 @@ int main(void) {
 
 		switch (current_state) {
 			case YELLOW:
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);
-				GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
-		    	GPIO_PortToggle(GPIOE, 1u << PIN26);
-		     	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+
+				YELLOW_RGB();
 
 			     if (ONE == Sw){
 			    	current_state = GREEN;
@@ -136,11 +125,8 @@ int main(void) {
 				break;
 
 			case RED:
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);
-				GPIO_PortToggle(GPIOB, 1u << PIN22);					// RED
-		     	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+
+				RED_RGB();
 
 				switch (Sw) {
 					case ONE:
@@ -163,12 +149,7 @@ int main(void) {
 
 			case PURPLE:
 
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);
-				GPIO_PortToggle(GPIOB, 1u << PIN21);					// PURPLE
-		    	GPIO_PortToggle(GPIOB, 1u << PIN22);
-		    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+				PURPLE_RGB();
 
 			     if (ONE == Sw){
 			   		current_state = GREEN;
@@ -194,10 +175,7 @@ int main(void) {
 
 			case GREEN:
 
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);					GPIO_PortToggle(GPIOE, 1u << PIN26);					// GREEN
-			    SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+				GREEN_RGB();
 
 				switch (Sw) {
 
@@ -220,11 +198,8 @@ int main(void) {
 				break;
 
 			case BLUE:
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);
-				GPIO_PortToggle(GPIOB, 1u << PIN21);					// BLUE
-		    	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+
+				BLUE_RGB();
 
 		    	if (ONE == Sw){
 		    		current_state = RED;
@@ -250,13 +225,7 @@ int main(void) {
 
 			case WHITE:
 
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);
-				GPIO_PortToggle(GPIOB, 1u << PIN21);					// WHITE
-				GPIO_PortToggle(GPIOB, 1u << PIN22);
-				GPIO_PortToggle(GPIOE, 1u << PIN26);
-				SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+				WHITE_RGB();
 
 				switch (Sw){
 					case ONE:
@@ -278,13 +247,7 @@ int main(void) {
 				break;
 
 			default:
-				GPIO_PortSet(GPIOB, 1u << PIN21);
-				GPIO_PortSet(GPIOB, 1u << PIN22);
-				GPIO_PortSet(GPIOE, 1u << PIN26);
-				GPIO_PortToggle(GPIOB, 1u << PIN22);					// YELLOW
-			    GPIO_PortToggle(GPIOE, 1u << PIN26);
-				current_state = YELLOW;
-			    SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
+				YELLOW_RGB();
 			break;
 			}
 
