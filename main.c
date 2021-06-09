@@ -1,34 +1,8 @@
-#include <stdint.h>
 #include <stdio.h>
 #include "pin_mux.h"
 #include "fsl_gpio.h"
 #include "fsl_port.h"
 #include "fsl_common.h"
-
-#define PIN22       22u
-#define PIN21       21u
-#define PIN26		26u
-#define PIN2		2u
-#define PIN3		3u
-#define PIN6        6u
-#define PIN4        4u
-
-#define ONE   	(0x01u)										// Sw2 Izquierda
-#define TWO   	(0x02u)										// Sw3 Derecha
-#define THREE 	(0x03u)										// Start
-#define ZERO	(0x00u)										// Sw3 X2
-
-#define CORE_FREQ	21000000u
-#define DELAY		1000000u
-
-typedef enum {
- 	RED,
- 	BLUE,
- 	PURPLE,
- 	WHITE,
- 	YELLOW,
- 	GREEN,
-}State_name_t;
 
 uint8_t g_ButtonPress = 0;
 
@@ -47,23 +21,34 @@ gpio_pin_config_t analyzer_config = {
         1,
 };
 
-// Interrupcion en PORTA
+#define PIN22       22u
+#define PIN21       21u
+#define PIN26		26u
 
-void PORTA_IRQHandler(void){
-    GPIO_PortClearInterruptFlags(GPIOA, 1U << PIN4);
-    g_ButtonPress = true;
-    SDK_ISR_EXIT_BARRIER;
-}
+#define PIN2		2u
+#define PIN3		3u
 
-// Interrupcion en PORTC
+#define PIN6        6u
+#define PIN4        4u
 
-void PORTC_IRQHandler(void){
-    GPIO_PortClearInterruptFlags(GPIOC, 1U << PIN6);
-    g_ButtonPress = true;
-    SDK_ISR_EXIT_BARRIER;
-}
+#define ONE   		(0x01u)										// Sw2 Izquierda
+#define TWO   		(0x02u)										// Sw3 Derecha
+#define THREE 		(0x03u)										// Start
+#define ZERO		(0x00u)										// Sw3 X2
 
-int main(void){
+#define CORE_FREQ	21000000u
+#define DELAY		1000000u
+
+typedef enum {
+	RED,
+	BLUE,
+	PURPLE,
+	WHITE,
+	YELLOW,
+	GREEN,
+}State_name_t;
+
+int main(void) {
 
 	uint32_t Sw2, Sw3, Sw;
 
@@ -104,23 +89,7 @@ int main(void){
   GPIO_PinInit(GPIOB, PIN2, &analyzer_config);
   GPIO_PinInit(GPIOB, PIN3, &analyzer_config);
 
-  PORT_SetPinInterruptConfig(PORTA, PIN4, kPORT_InterruptFallingEdge);
-  PORT_SetPinInterruptConfig(PORTC, PIN6, kPORT_InterruptFallingEdge);
-
-  NVIC_EnableIRQ(PORTA_IRQn);
-  NVIC_EnableIRQ(PORTC_IRQn);
-
-  NVIC_SetPriority(PORTA_IRQn, 1);
-  NVIC_SetPriority(PORTC_IRQn, 1);
-
     while(1) {
-
-    	printf("Boton: %d \n", g_ButtonPress);
-
-    	if(g_ButtonPress)
-    	    	{
-    	    		g_ButtonPress = false;
-    	    	}
 
     	Sw3 = GPIO_PinRead(GPIOA, PIN4);
     	Sw2 = GPIO_PinRead(GPIOC, PIN6);
@@ -130,7 +99,6 @@ int main(void){
 		printf("Sw3: %d \n", Sw3);
 		printf("Sw: %d \n", Sw);
 		printf("State: %d \n", current_state);
-
 		if (Sw == TWO && Sw3 == 0){											// Si se presiona por segunda vez S3 seguida
 			Sw = ZERO;
 		}
@@ -145,7 +113,13 @@ int main(void){
 			    	GPIO_PortToggle(GPIOE, 1u << PIN26);
 			     	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
 
-					if (THREE == Sw){
+			     	if (ONE == Sw){
+			     		current_state = GREEN;
+			     	}
+			     	else if (TWO == Sw){
+			     		current_state = BLUE;
+			     	}
+			     	else if (THREE == Sw){
 						current_state = RED;
 					}
 					else if(ZERO == Sw){
@@ -174,6 +148,9 @@ int main(void){
 						case THREE:
 							current_state = PURPLE;
 						break;
+						case ZERO:
+							current_state = GREEN;
+							break;
 						default:
 							current_state = RED;
 						break;
@@ -189,7 +166,13 @@ int main(void){
 			    	GPIO_PortToggle(GPIOB, 1u << PIN22);
 			     	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
 
-					if (THREE == Sw){
+			     	if (ONE == Sw){
+			     		current_state = GREEN;
+			     	}
+			     	else if (TWO == Sw){
+			     		current_state = BLUE;
+			     	}
+			     	else if (THREE == Sw){
 						current_state = YELLOW;
 					}
 					else if(ZERO == Sw){
@@ -212,6 +195,12 @@ int main(void){
 
 						case ONE:
 							current_state = BLUE;
+						break;
+						case TWO:
+							current_state = BLUE;
+						break;
+						case THREE:
+							current_state = YELLOW;
 						break;
 						case ZERO:
 							current_state = PURPLE;
@@ -236,6 +225,12 @@ int main(void){
 						else if (TWO == Sw){
 							current_state = WHITE;
 						}
+						else if (THREE == Sw){
+							current_state = YELLOW;
+						}
+						else if (ZERO == Sw){
+							current_state = GREEN;
+						}
 						else{
 							current_state = BLUE;
 						}
@@ -251,11 +246,20 @@ int main(void){
 				    	GPIO_PortToggle(GPIOE, 1u << PIN26);
 				     	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
 
-						switch (Sw) {
+						switch (Sw){
 
+							case ONE:
+								current_state = GREEN;
+								break;
 							case TWO:
 								current_state = RED;
 							break;
+							case THREE:
+								current_state = YELLOW;
+								break;
+							case ZERO:
+								current_state = GREEN;
+								break;
 							default:
 								current_state = WHITE;
 							break;
