@@ -5,23 +5,6 @@
 #include "fsl_port.h"
 #include "fsl_common.h"
 
-uint8_t g_ButtonPress = 0;
-
- gpio_pin_config_t sw_config = {
-        kGPIO_DigitalInput,
-        0,
-    };
-
-gpio_pin_config_t led_config = {
-        kGPIO_DigitalOutput,
-        1,
-    };
-
-gpio_pin_config_t analyzer_config = {
-        kGPIO_DigitalOutput,
-        1,
-};
-
 #define PIN22       22u
 #define PIN21       21u
 #define PIN26		26u
@@ -41,19 +24,34 @@ gpio_pin_config_t analyzer_config = {
 #define DELAY		1000000u
 
 typedef enum {
-	RED,
-	BLUE,
-	PURPLE,
-	WHITE,
-	YELLOW,
-	GREEN,
+ 	RED,
+ 	BLUE,
+ 	PURPLE,
+ 	WHITE,
+ 	YELLOW,
+ 	GREEN,
 }State_name_t;
+
+uint8_t g_ButtonPress = 0;
+
+ gpio_pin_config_t sw_config = {
+        kGPIO_DigitalInput,
+        0,
+    };
+
+gpio_pin_config_t led_config = {
+        kGPIO_DigitalOutput,
+        1,
+    };
+
+gpio_pin_config_t analyzer_config = {
+        kGPIO_DigitalOutput,
+        1,
+};
 
 // Interrupcion en PORTA
 
-void PORTA_IRQHandler(void)
-{
-
+void PORTA_IRQHandler(void){
     GPIO_PortClearInterruptFlags(GPIOA, 1U << PIN4);
     g_ButtonPress = true;
     SDK_ISR_EXIT_BARRIER;
@@ -61,15 +59,13 @@ void PORTA_IRQHandler(void)
 
 // Interrupcion en PORTC
 
-void PORTC_IRQHandler(void)
-{
-
+void PORTC_IRQHandler(void){
     GPIO_PortClearInterruptFlags(GPIOC, 1U << PIN6);
     g_ButtonPress = true;
     SDK_ISR_EXIT_BARRIER;
 }
 
-int main(void) {
+int main(void){
 
 	uint32_t Sw2, Sw3, Sw;
 
