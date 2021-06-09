@@ -8,10 +8,8 @@
 #define PIN22       22u
 #define PIN21       21u
 #define PIN26		26u
-
 #define PIN2		2u
 #define PIN3		3u
-
 #define PIN6        6u
 #define PIN4        4u
 
@@ -132,6 +130,7 @@ int main(void){
 		printf("Sw3: %d \n", Sw3);
 		printf("Sw: %d \n", Sw);
 		printf("State: %d \n", current_state);
+
 		if (Sw == TWO && Sw3 == 0){											// Si se presiona por segunda vez S3 seguida
 			Sw = ZERO;
 		}
