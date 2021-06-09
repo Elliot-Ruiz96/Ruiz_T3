@@ -267,7 +267,6 @@ int main(void) {
 					break;
 
 				default:
-
 					GPIO_PortSet(GPIOB, 1u << PIN21);
 					GPIO_PortSet(GPIOB, 1u << PIN22);
 					GPIO_PortSet(GPIOE, 1u << PIN26);
@@ -275,7 +274,6 @@ int main(void) {
 			    	GPIO_PortToggle(GPIOE, 1u << PIN26);
 					current_state = YELLOW;
 			     	SDK_DelayAtLeastUs(DELAY, CORE_FREQ);
-
 					break;
 			}
 
