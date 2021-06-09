@@ -12,14 +12,6 @@ gpio_pin_config_t led_config = {
         1,
     };
 
-gpio_pin_config_t analyzer_config = {
-        kGPIO_DigitalOutput,
-        1,
-};
-
-#define PIN2		2u
-#define PIN3		3u
-
 int main(void) {
 
 	const port_pin_config_t sw_pin_config = {
@@ -47,15 +39,10 @@ int main(void) {
   PORT_SetPinMux(PORTB, PIN21, kPORT_MuxAsGpio);
   PORT_SetPinMux(PORTE, PIN26, kPORT_MuxAsGpio);
 
-  PORT_SetPinMux(PORTB, PIN2, kPORT_MuxAsGpio);
-  PORT_SetPinMux(PORTB, PIN3, kPORT_MuxAsGpio);
-
   GPIO_PinInit(GPIOB, PIN22, &led_config);
   GPIO_PinInit(GPIOB, PIN21, &led_config);
   GPIO_PinInit(GPIOE, PIN26, &led_config);
 
-  GPIO_PinInit(GPIOB, PIN2, &analyzer_config);
-  GPIO_PinInit(GPIOB, PIN3, &analyzer_config);
 
   Start_State();
 
