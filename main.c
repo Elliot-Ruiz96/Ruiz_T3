@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include "pin_mux.h"
 #include "fsl_gpio.h"
@@ -48,6 +49,26 @@ typedef enum {
 	GREEN,
 }State_name_t;
 
+// Interrupcion en PORTA
+
+void PORTA_IRQHandler(void)
+{
+
+    GPIO_PortClearInterruptFlags(GPIOA, 1U << PIN4);
+    g_ButtonPress = true;
+    SDK_ISR_EXIT_BARRIER;
+}
+
+// Interrupcion en PORTC
+
+void PORTC_IRQHandler(void)
+{
+
+    GPIO_PortClearInterruptFlags(GPIOC, 1U << PIN6);
+    g_ButtonPress = true;
+    SDK_ISR_EXIT_BARRIER;
+}
+
 int main(void) {
 
 	uint32_t Sw2, Sw3, Sw;
@@ -89,7 +110,23 @@ int main(void) {
   GPIO_PinInit(GPIOB, PIN2, &analyzer_config);
   GPIO_PinInit(GPIOB, PIN3, &analyzer_config);
 
+  PORT_SetPinInterruptConfig(PORTA, PIN4, kPORT_InterruptFallingEdge);
+  PORT_SetPinInterruptConfig(PORTC, PIN6, kPORT_InterruptFallingEdge);
+
+  NVIC_EnableIRQ(PORTA_IRQn);
+  NVIC_EnableIRQ(PORTC_IRQn);
+
+  NVIC_SetPriority(PORTA_IRQn, 1);
+  NVIC_SetPriority(PORTC_IRQn, 1);
+
     while(1) {
+
+    	printf("Boton: %d \n", g_ButtonPress);
+
+    	if(g_ButtonPress)
+    	    	{
+    	    		g_ButtonPress = false;
+    	    	}
 
     	Sw3 = GPIO_PinRead(GPIOA, PIN4);
     	Sw2 = GPIO_PinRead(GPIOC, PIN6);
